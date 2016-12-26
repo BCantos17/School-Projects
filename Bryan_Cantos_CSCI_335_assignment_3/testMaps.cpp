@@ -5,46 +5,41 @@
 
 #include <iostream>
 #include <cstdlib>
-#include "MyHashMap.h"
+#include <map>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <chrono>
 using namespace std;
 
-vector<string> 						insertfile				( const string & name );
-MyHashMap<string, vector<string>>	computeAdjacentWords	( const vector<string> & words, const int size );
-bool								oneCharOff				( const string & word1, const string & word2 );
-void								findAdjWords			( const MyHashMap<string, vector<string>> & adjWords );
-void 								display 				( const MyHashMap<string, vector<string>> & adjWords);
+vector<string>				insertfile				( const string & name );
+map<string, vector<string>> computeAdjacentWords	( const vector<string> & words );
+bool						oneCharOff				( const string & word1, const string & word2 );
+void						findAdjWords			(const map<string, vector<string>> & adjWords);
 
-int main( int argc, char **argv ) {
-	if (argc != 3) {
-		cout << "Usage: " << argv[0] << " <filename>" << "<size of hash table>" << endl;
+int main(int argc, char **argv) {
+	if (argc != 2) {
+		cout << "Usage: " << argv[0] << " <filename>" << endl;
 		return 1;
 	}
 
-	// inserts the input flags
-	string name(argv[1]);
-	int size = atoi(argv[2]);
-	vector<string> words = insertfile( name );
+	string name(argv[1]);						// Insert text file into a string
+	vector<string> words = insertfile( name );	// Gets a vector of the all words from the text file
 
+	// Begin count of computeAdjacentWords
 	cout << "Testing time to computeAdjacentWords()" << endl;
 	const auto begin = chrono::high_resolution_clock::now();
 
-	MyHashMap<string, vector<string>> adjWords = computeAdjacentWords( words, size );
+	// Makes a map of all adjacent words
+	map<string, vector<string>> adjWords = computeAdjacentWords( words );
 
 	const auto end = chrono::high_resolution_clock::now();
 	cout << "Time to computeAdjacentWords is" << endl;
 	cout << chrono::duration_cast<chrono::nanoseconds>(end-begin).count() << "ns" << endl;
 	cout << chrono::duration_cast<chrono::milliseconds>(end-begin).count() << "ms." << endl;
 
+	// Ask user for word to find any adjacent words in a map
 	findAdjWords( adjWords );
-
-	/*************** Display function for personal use *******************************/
-	//display( adjWords );
-
-	cout << "display() is inside int main(), uncomment it out to use." << endl;
 
 	return 0;
 }
@@ -62,21 +57,25 @@ vector<string> insertfile( const string & name ) {
 
 	while(file >> oneWord)
 		words.push_back( oneWord );
- 	
+	
 	return words;
 }
 
-MyHashMap<string,vector<string>> computeAdjacentWords( const vector<string> & words, const int size ) {
-	MyHashMap<string, vector<string>> adjWords( size );
-	MyHashMap<int, vector<string>> wordsByLength(100000);
+// Computes a map in which the keys are words and values are vectors of words
+// that differ in only one character from the corresponding key.
+// Uses a quadratic algorithm, but speeds things up a little by
+// maintaining an additional map that groups words by their length.
+map<string,vector<string>> computeAdjacentWords( const vector<string> & words ) {
+	map<string,vector<string>> adjWords;
+	map<int,vector<string>> wordsByLength;
 
 	// Group t words by their length
 	for( auto & thisWord : words )
 		wordsByLength[ thisWord.length( ) ].push_back( thisWord );
 
 	// Work on each group separately
-	for( auto entry = wordsByLength.begin(); entry != wordsByLength.end(); ++entry ) {
-		const vector<string> & groupsWords = entry->mapped;
+	for( auto & entry : wordsByLength ) {
+		const vector<string> & groupsWords = entry.second;
 
 		for( int i = 0; i < groupsWords.size( ); ++i )
 			for( int j = i + 1; j < groupsWords.size( ); ++j )
@@ -105,9 +104,9 @@ bool oneCharOff( const string & word1, const string & word2 ) {
 	return diffs == 1;
 }
 
- // Prompts user to input a word to find in the map.
- // If found, output all adjacent words
-void findAdjWords(const MyHashMap<string, vector<string>> & adjWords) {
+// Prompts user to input a word to find in the map.
+// If found, output all adjacent words
+void findAdjWords(const map<string, vector<string>> & adjWords) {
 	string wordToFind;
 	char again;
 
@@ -117,36 +116,20 @@ void findAdjWords(const MyHashMap<string, vector<string>> & adjWords) {
 	cout << "Testing time to find " << wordToFind << "." << endl;
 	const auto begin = chrono::high_resolution_clock::now();
 
-	if( adjWords.contains( wordToFind ) ) {
-		// Gets a vector of the user inputted key
-		auto vectorOfWords = adjWords.find( wordToFind );
-		
+	auto itr = adjWords.find( wordToFind );
+
+	if (itr == adjWords.end())
+		cout << "Could not find word." << endl;
+
+	else {
 		cout << "Word found, now outputting all adjacent words." << endl;
-		cout << wordToFind << " ";
-		for(auto & itr : vectorOfWords)
-			cout << itr << " ";
+		for(auto & itr2 : itr->second)
+			cout << itr2 << " ";
 		cout << "" << endl;
 	}
 
-	else
-		cout << "Could not find word." << endl;
-	
 	const auto end = chrono::high_resolution_clock::now();
 	cout << "Time to look for " << wordToFind << " is" << endl;
 	cout << chrono::duration_cast<chrono::nanoseconds>(end-begin).count() << "ns" << endl;
 	cout << chrono::duration_cast<chrono::milliseconds>(end-begin).count() << "ms." << endl;
-}
-
-// Displays all the contents in the HashMap in order from beginning to end
-void display( const MyHashMap<string, vector<string>> & adjWords)
-{
-	for( auto itr = adjWords.begin(); itr != adjWords.end(); ++itr ) {
-		if( itr->mapped.size() != 0 ){
-			cout << itr->element << " ";
-			for( auto & itr2 : itr->mapped )
-				cout << itr2 << " ";
-		}
-		if( itr->mapped.size() != 0 )
-			cout << "\n";
-	}
 }

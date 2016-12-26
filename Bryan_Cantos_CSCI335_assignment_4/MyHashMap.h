@@ -40,6 +40,7 @@ class MyHashMap
 
   public:
 	/****************OUTER FUNCTIONS******************/
+	explicit MyHashMap 			();
 	explicit MyHashMap 			( int size );
 	void makeEmpty				();
 	bool insert					( const KeyType & key, const ObjectType & obj );

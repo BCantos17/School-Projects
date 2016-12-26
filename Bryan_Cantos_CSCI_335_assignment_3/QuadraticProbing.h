@@ -1,13 +1,12 @@
 #ifndef QUADRATIC_PROBING_H
 #define QUADRATIC_PROBING_H
-#include <iostream>
+
 #include <vector>
 #include <algorithm>
 #include <functional>
 #include <string>
+#include "QuadraticProbing.cpp"
 using namespace std;
-
-int nextPrime( int n );
 
 // QuadraticProbing Hash table class
 //
@@ -24,8 +23,8 @@ template <typename HashedObj>
 class HashTable
 {
   public:
-    explicit HashTable( int size = 1009 ) : array( nextPrime( size ) )
-      { makeEmpty( ); probeCounter = 0; }
+    explicit HashTable( int size = 1000 ) : array( nextPrime( size ) )
+      { makeEmpty( ); }
 
     bool contains( const HashedObj & x ) const
     {
@@ -42,7 +41,6 @@ class HashTable
     bool insert( const HashedObj & x )
     {
             // Insert x as active
-        cout << "does it get here?" << endl;
         int currentPos = findPos( x );
         if( isActive( currentPos ) )
             return false;
@@ -51,8 +49,8 @@ class HashTable
         array[ currentPos ].info = ACTIVE;
 
             // Rehash; see Section 5.5
-        if( ++currentSize > array.size( ) / 2 )
-            rehash( );
+        //if( ++currentSize > array.size( ) / 2 )
+            //rehash( );
 
         return true;
     }
@@ -61,15 +59,16 @@ class HashTable
     {
             // Insert x as active
         int currentPos = findPos( x );
+
         if( isActive( currentPos ) )
             return false;
-
+        
         array[ currentPos ] = std::move( x );
         array[ currentPos ].info = ACTIVE;
 
             // Rehash; see Section 5.5
-        if( ++currentSize > array.size( ) / 2 )
-            rehash( );
+        //if( ++currentSize > array.size( ) / 2 )
+            //rehash( );
 
         return true;
     }
@@ -84,11 +83,12 @@ class HashTable
         return true;
     }
 
-    enum EntryType { ACTIVE, EMPTY, DELETED };
-
-    int returnProbe(){
-        return probeCounter;
+    int probeCount()
+    {
+        return probes;
     }
+
+    enum EntryType { ACTIVE, EMPTY, DELETED };
 
   private:
     struct HashEntry
@@ -105,7 +105,7 @@ class HashTable
     
     vector<HashEntry> array;
     int currentSize;
-    mutable int probeCounter;
+    mutable int probes;
 
     bool isActive( int currentPos ) const
       { return array[ currentPos ].info == ACTIVE; }
@@ -114,13 +114,14 @@ class HashTable
     {
         int offset = 1;
         int currentPos = myhash( x );
-        probeCounter = 1;
+        probes = 1;
+
         while( array[ currentPos ].info != EMPTY &&
                array[ currentPos ].element != x )
         {
-            probeCounter++;
             currentPos += offset;  // Compute ith probe
             offset += 2;
+            probes++;
             if( currentPos >= array.size( ) )
                 currentPos -= array.size( );
         }

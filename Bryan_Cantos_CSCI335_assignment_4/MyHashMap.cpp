@@ -5,14 +5,21 @@
 
 /***************************************PUBLIC FUNCTIONS*************************************/
 
-// void makeEmpty				() 				--> Lazy deletion of map
-// bool insert					( key, obj )  	--> copys lvalue into map
-// bool insert					( key, obj ) 	--> move rvalue into map
-// bool remove					( key )			--> lazy deletion of key
-// bool contains				( key ) 		--> returns true if found
-// ObjectType find				( key ) 		--> returns object of key
-// ObjectType & operator[]		( key ) 		--> returns object of key, inserts lvalue if not found
-// ObjectType & operator[]		( key ) 		--> returns object of key, move rvalue if not found
+// void makeEmpty			() 				--> Lazy deletion of map
+// bool insert				( key, obj )  	--> copys lvalue into map
+// bool insert				( key, obj ) 	--> move rvalue into map
+// bool remove				( key )			--> lazy deletion of key
+// bool contains			( key ) 		--> returns true if found
+// ObjectType find			( key ) 		--> returns object of key
+// ObjectType & operator[]	( key ) 		--> returns object of key, inserts lvalue if not found
+// ObjectType & operator[]	( key ) 		--> returns object of key, move rvalue if not found
+
+/**
+ *  Default Contructor
+ */
+template<class KeyType, class ObjectType>
+MyHashMap<KeyType, ObjectType>::MyHashMap( ) : array( nextPrime( 100 ) )
+{ makeEmpty(); }
 
 /**
  *  Default Contructor
@@ -39,12 +46,13 @@ void MyHashMap<KeyType, ObjectType>::makeEmpty( )
 template<class KeyType, class ObjectType>
 bool MyHashMap<KeyType, ObjectType>::insert( const KeyType & key, const ObjectType & obj )
 {
-	// Insert x as active
+	// Find key hash value
 	int currentPos = findPos( key );
 
 	if( isActive( currentPos ) )
 		return false;
 
+	// Insert Items
 	array[ currentPos ].element = key;
 	array[ currentPos ].mapped = obj;
 	array[ currentPos ].info = ACTIVE;
@@ -61,11 +69,12 @@ bool MyHashMap<KeyType, ObjectType>::insert( const KeyType & key, const ObjectTy
 template<class KeyType, class ObjectType>
 bool MyHashMap<KeyType, ObjectType>::insert( const KeyType && key, const ObjectType && obj )
 {
-		// Insert x as active
+	// Find key hash value
 	int currentPos = findPos( key );
 	if( isActive( currentPos ) )
 		return false;
 
+	// Move Items in array
 	array[ currentPos ].element = std::move( key );
 	array[ currentPos ].mapped = std::move( obj );
 	array[ currentPos ].info = ACTIVE;
@@ -114,31 +123,50 @@ ObjectType MyHashMap<KeyType, ObjectType>::find( const KeyType & key ) const
 	}
 }
 
+/**
+ *  Overload Bracket operator, insert if new element
+ *  Return Mapped object
+ */
 template<class KeyType, class ObjectType>
 ObjectType & MyHashMap<KeyType, ObjectType>::operator[]( const KeyType & key )
 {	
 	int currentPos = findPos( key );
 	if( !isActive( currentPos ) ) {
-		insertKey( key, currentPos );
-		return array[ currentPos ].mapped;
+		if(  array[ currentPos ].info == DELETED )
+			array[ currentPos ].info == ACTIVE;
+		else
+			insertKey( key, currentPos );
 	}
-	else
 		return array[ currentPos ].mapped;
 }
 
+/**
+ *  Overload Bracket operator, move into map if new element
+ *  Return Mapped object
+ */
 template<class KeyType, class ObjectType>
 ObjectType & MyHashMap<KeyType, ObjectType>::operator[]( const KeyType && key )
 {	
 	int currentPos = findPos( key );
 	if( !isActive( currentPos ) ) {
-		insertKey( key, currentPos );
-		return array[ currentPos ].mapped;
+		if(  array[ currentPos ].info == DELETED )
+			array[ currentPos ].info == ACTIVE;
+		else
+			insertKey( key , currentPos );
 	}
-	else
-		return array[ currentPos ].mapped;
+	return array[ currentPos ].mapped;
 }
 					
 /***************************************PRIVATE FUNCTIONS*************************************/
+
+//	bool isActive	( currentPos ) 		--> Return true if active
+//	int findPos		( key ) 			--> return hash value of key
+//	void rehash		() 					--> rehash a map into a bigger one
+//	size_t myhash 	( key ) 			--> returns hash % table size
+//	bool insertKey	( key, currentPos ) --> inserts a key into map
+//	bool insertKey	( key, currentPos ) --> moves a key into map
+//	bool isPrime	( n ) 				--> determines if an int is prime
+//	int nextPrime	( n ) 				--> if not a prime, gets next prime number of int
 
 /**
  *  Return true if the current position in map is taken

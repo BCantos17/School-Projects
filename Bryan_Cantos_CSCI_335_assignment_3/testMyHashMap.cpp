@@ -24,14 +24,16 @@ int main( int argc, char **argv ) {
 		return 1;
 	}
 
-	// inserts the input flags
-	string name(argv[1]);
-	int size = atoi(argv[2]);
-	vector<string> words = insertfile( name );
 
+	string name(argv[1]);						// Insert text file into a string
+	int size = atoi(argv[2]);					// Converts the input argument into int
+	vector<string> words = insertfile( name );	// Gets a vector of the all words from the text file
+
+	// Begin count of computeAdjacentWords
 	cout << "Testing time to computeAdjacentWords()" << endl;
 	const auto begin = chrono::high_resolution_clock::now();
 
+	// Makes a map of all adjacent words
 	MyHashMap<string, vector<string>> adjWords = computeAdjacentWords( words, size );
 
 	const auto end = chrono::high_resolution_clock::now();
@@ -39,12 +41,13 @@ int main( int argc, char **argv ) {
 	cout << chrono::duration_cast<chrono::nanoseconds>(end-begin).count() << "ns" << endl;
 	cout << chrono::duration_cast<chrono::milliseconds>(end-begin).count() << "ms." << endl;
 
+	// Ask user for word to find any adjacent words in a map
 	findAdjWords( adjWords );
 
 	/*************** Display function for personal use *******************************/
 	//display( adjWords );
 
-	cout << "display() is inside int main(), uncomment it out to use." << endl;
+	cout << "display() is inside int main(), uncomment it to use." << endl;
 
 	return 0;
 }

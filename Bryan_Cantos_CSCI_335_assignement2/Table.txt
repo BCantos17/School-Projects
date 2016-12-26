@@ -1,0 +1,24 @@
+		   
+		    Insert()	Average depth		Depth/ratio		  Successful Querys		Contain() 	
+
+BST			10686		10.3274				10.32/9.142        420                  4212          
+
+AVL         8368        7.37522             7.375/9.142        420                  3377
+
+LazyAVL     8368        7.37522             7.375/9.142        420                  3377
+
+*********************************************************************************************************
+
+		    Successful Removes	  Remove()		Depth		  Depth/ratio	  Successful Querys    Contain() 	
+
+BST		      161                 2276          10.0025       10.0025/8.658   126                   4466
+
+AVL           161                 1929          6.89604       6.896/8.658     126                   3835
+
+LazyAVL       210                 1708          7.37522       7.375/9.142     420                   3377
+
+The Binary Search tree overall takes longer for everything. It has a higher depth, average depth, has more recursive calls to insert, remove and contain. 
+
+The AVL tree is much more efficent. It saves more space by having less average depth which means less recursive calls to insert, remove and contain.
+
+The Lazy AVL is more efficient than the BinaryTree but could possibly take up more space when considering removing a function. It has to go through less recursve calls than both the BST and AVL but it takes up more memory.
